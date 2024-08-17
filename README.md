@@ -15,7 +15,7 @@ and update the container's table accordingly.
 
 That's it.
 
-¯\_(ツ)\_/¯
+¯\\_(ツ)\_/¯
 
 Just start `python3 -m http.server` in the frontend directory and go see the magic happenning at http://127.0.0.1:8000
 
