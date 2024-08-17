@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 const cors = require('cors')
+const http= require('http');
+
 app.use(express.json());
 app.use(cors());
 app.use(function (req, res, next) {
@@ -9,11 +11,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-const http= require('http');
-
-
 const PORT = process.env.PORT || 3000;
-
 
 function dockerRequestContainers(options) {
   let result = [];
