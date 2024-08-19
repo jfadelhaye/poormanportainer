@@ -1,5 +1,4 @@
 function cleanTable(tbodyref) {
-  console.log(tbodyref.rows);
   tbodyref.innerHTML='';
 }
 
@@ -40,15 +39,35 @@ function updateContainerDetails(container) {
   let cell2 = row.insertCell(1);
   cell1.innerHTML = 'Key';
   cell2.innerHTML = 'Value';
+
   let tbodyref = document.getElementById('containerTableBody');
   cleanTable(tbodyref);
-
+  console.log(container);
   for (let key in container) {
+    // handle arrays and objects in struct 
+    let value ='';
+    if ( typeof container[key] === 'array') {
+      if (container[key].length === 0) {
+        value = 'No data';
+      } else {
+        value = container[key].join("<br/>");
+      }
+    }
+    else if (typeof container[key] === 'object') {
+      for (let k in container[key]) {
+        if (typeof container[key][k] === 'object') {
+          value += `${k}: ${JSON.stringify(container[key][k])} <br />`;
+        }
+        value += `${k}: ${container[key][k]} <br />`;
+      }
+    } else {
+      value = container[key];
+    }
     let row = tbodyref.insertRow();
     let cellkey = row.insertCell(0);
     let cellValue = row.insertCell(1);
     cellkey.innerHTML = `${key}`;
-    cellValue.innerHTML = `${container[key]}`;
+    cellValue.innerHTML = `${value}`;
   };
 }
 
