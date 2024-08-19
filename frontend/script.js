@@ -1,6 +1,25 @@
-async function fetchContainers() {
+function cleanTable(tbodyref) {
+  console.log(tbodyref.rows);
+  tbodyref.innerHTML='';
+}
+
+document.querySelector("#refreshButton").addEventListener('click', (e) => {
+  fetchContainers().then((containers) => {
+    updateTableWithContainersList(containers);
+  });
+});
+
+function fetchContainers() {
+  return fetchData('containers');
+}
+
+function fetchContainer(id) {
+  return fetchData(`container/${id}`);
+}
+
+async function fetchData(route){
   try {
-    let response = await fetch('http://127.0.0.1:3000/containers', {
+    let response = await fetch(`http://127.0.0.1:3000/${route}`, {
       headers: {
         'Access-Control-Allow-Origin': '*'
       }
@@ -12,8 +31,46 @@ async function fetchContainers() {
   }
 }
 
-function updateTable(elements) {
-  let tbodyref = document.getElementById('containerTable');
+function updateContainerDetails(container) {
+  document.querySelector('#header').textContent = `Container ${container.name}`;
+  let theadref = document.getElementById('containerTableHead');
+  theadref.innerHTML = '';
+  let row = theadref.insertRow();
+  let cell1 = row.insertCell(0);
+  let cell2 = row.insertCell(1);
+  cell1.innerHTML = 'Key';
+  cell2.innerHTML = 'Value';
+  let tbodyref = document.getElementById('containerTableBody');
+  cleanTable(tbodyref);
+
+  for (let key in container) {
+    let row = tbodyref.insertRow();
+    let cellkey = row.insertCell(0);
+    let cellValue = row.insertCell(1);
+    cellkey.innerHTML = `${key}`;
+    cellValue.innerHTML = `${container[key]}`;
+  };
+}
+
+function updateTableWithContainersList(elements) {
+  document.querySelector('#header').textContent = `Dashboard`;
+
+  let theadref = document.getElementById('containerTableHead');
+  theadref.innerHTML = '';
+  let row = theadref.insertRow();
+  let cell1 = row.insertCell(0);
+  let cell2 = row.insertCell(1);
+  let cell3 = row.insertCell(2);
+  let cell4 = row.insertCell(3);
+  let cell5 = row.insertCell(4);
+  cell1.innerHTML = 'ID';
+  cell2.innerHTML = 'Name';
+  cell3.innerHTML = 'Image';
+  cell4.innerHTML = 'State';
+  cell5.innerHTML = 'Status';
+
+  let tbodyref = document.getElementById('containerTableBody');
+  cleanTable(tbodyref);
   elements.forEach((container) => {
     let row = tbodyref.insertRow();
     let cell1 = row.insertCell(0);
@@ -21,7 +78,13 @@ function updateTable(elements) {
     let cell3 = row.insertCell(2);
     let cell4 = row.insertCell(3);
     let cell5 = row.insertCell(4);
-    cell1.innerHTML = `<a href="#">${container.id}</a>`;
+    cell1.innerHTML = `<a href="#" class="container-id">${container.id}</a>`;
+    let containerIdLink = cell1.querySelector('.container-id');
+    containerIdLink.addEventListener('click', (e) => {
+      fetchContainer(container.id).then((container) => {
+      updateContainerDetails(container);
+      });
+    });
     cell2.innerHTML = container.name;
     cell3.innerHTML = container.image;
     cell4.innerHTML = container.state;
@@ -30,7 +93,6 @@ function updateTable(elements) {
 }
 
 fetchContainers().then((containers) => {
-  console.log(containers);
-  updateTable(containers);
+  updateTableWithContainersList(containers);
 });
 

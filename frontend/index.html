@@ -25,9 +25,11 @@
   </head>
   <body>
     <h1>Poor Man's portainer</h1>
-    <h2>Here is a list of containers running on the host : </h2>
+    <h2 id="header">Here is a list of containers running on the host : </h2>
+    <button id="refreshButton">Dashboard</button>
     <script src="script.js"></script>
     <table id="containerTable">
+      <thead id="containerTableHead">
       <tr>
         <th>Container ID</th>
         <th>Container Name</th>
@@ -35,7 +37,9 @@
         <th>Container Status</th>
         <th>Container state</th>
       </tr>
-
+      </thead>
+      <tbody id="containerTableBody">
+      </tbody>
     </table>
 
   <p>Behind the scene ... </p>
@@ -46,7 +50,6 @@
   
   <h4>TODO</h4>
   <ul>
-    <li> Clicking a container shows it's full details</li>
     <li> In details view, each attribute is a writable textIput, an update button send a PUT request to docker</li>
     <li> A delete button in front of each line with confirmation modal</li>
     <li> start/stop containers</li>

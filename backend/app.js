@@ -25,7 +25,6 @@ function dockerRequestContainers(options) {
       res.on('end', () => {
       const parsedData = JSON.parse(rawData);
       for ( var i = 0; i < parsedData.length; i++) {
-      console.log('parsing container' + i + ' ...');
         let container = {
           'id': parsedData[i].Id.substring(0, 8),
           'name': parsedData[i].Names[0].substring(1),
@@ -33,9 +32,8 @@ function dockerRequestContainers(options) {
           'state': parsedData[i].State,
           'status': parsedData[i].Status
         }
+        console.log('sending container list ...');
         result.push(container);
-        console.log(result);
-
       }
       resolve(result);
     })
@@ -47,15 +45,71 @@ function dockerRequestContainers(options) {
 });
 }
 
+function dockerRequestSingleContainer(options) {
+  return new Promise((resolve, reject) => {
+    let req = http.request(options, (res) => {
+      res.setEncoding('utf8');
+      let rawData = '';
+      res.on('data', (chunk) => {
+        rawData += chunk;
+      });
+      res.on('end', () => {
+        const parsedData = JSON.parse(rawData);
+        let container = {
+          'id': parsedData.Id.substring(0, 8),
+          'name': parsedData.Name.substring(1),
+          'image': parsedData.Image,
+          'state': parsedData.State,
+          'status': parsedData.Status,
+          'created': parsedData.Created,
+          'command': parsedData.Command,
+          'ports': parsedData.Ports,
+          'labels': parsedData.Labels,
+          'network': parsedData.NetworkSettings,
+          'mounts': parsedData.Mounts,
+          'volumes': parsedData.Volumes,
+          'environment': parsedData.Config.Env,
+          'exposedPorts': parsedData.Config.ExposedPorts,
+          'entrypoint': parsedData.Config.Entrypoint,
+          'workingDir': parsedData.Config.WorkingDir,
+          'user': parsedData.Config.User,
+          'hostConfig': parsedData.HostConfig,
+          'networkSettings': parsedData.NetworkSettings
+
+        }
+        resolve(container);
+      });
+    });
+    req.on('error', (e) => {
+      reject(e);
+    });
+    req.end();
+  });
+}
+app.get('/container/:containerId', (req, res) => {
+  let id = req.params.containerId;
+  let path = '/v1.45/containers/' + id + '/json';
+  let options = {
+    socketPath: '/var/run/docker.sock',
+    path: path,
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+  let dockerResponse = dockerRequestSingleContainer(options);
+  dockerResponse.then((result) => {
+    res.json(result);
+  }).catch((err) => {
+    res.status
+  });
+});
+
 app.get('/containers', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
   let options = {
     socketPath: '/var/run/docker.sock',
     path: '/v1.45/containers/json?all=true',
     method: 'GET',
-    query: {
-      all: true
-    },
     headers: {
       'Content-Type': 'application/json'
     }
