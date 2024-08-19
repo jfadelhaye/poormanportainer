@@ -7,6 +7,8 @@ imitate its most basic features :
 - getting a specific container's details
 - being able to start / stop / update / delete a container
 
+Follow this link to get a real, production ready, product : http://github.com/portainer/portainer
+
 # Frontend
 
 Frontend is a basic html page with a small javascript companion.
