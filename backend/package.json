@@ -4,12 +4,14 @@
   "description": "qemu manager api server",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./test/*.spec.js"
   },
   "author": "julien delhaye",
   "license": "ISC",
   "dependencies": {
+    "chai": "^5.1.1",
     "cors": "^2.8.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "mocha": "^10.7.3"
   }
 }

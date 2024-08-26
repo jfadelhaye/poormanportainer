@@ -4,6 +4,7 @@ const cors = require('cors')
 const http= require('http');
 
 app.use(express.json());
+//cors handling
 app.use(cors());
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -86,6 +87,28 @@ function dockerRequestSingleContainer(options) {
     req.end();
   });
 }
+
+function dockercontainerStart(options) {
+  return new Promise((resolve, reject) => {
+    let req = http.request(options, (res) => {
+      res.setEncoding('utf8');
+      let rawData = '';
+      res.on('data', (chunk) => {
+        rawData += chunk;
+      });
+      res.on('end', () => {
+        const parsedData = JSON.parse(rawData);
+        resolve(parsedData);
+      });
+    });
+    req.on('error', (e) => {
+      console.log(e);
+      reject(e);
+    });
+    req.end();
+  });
+}
+
 app.get('/container/:containerId', (req, res) => {
   let id = req.params.containerId;
   let path = '/v1.45/containers/' + id + '/json';
@@ -98,6 +121,25 @@ app.get('/container/:containerId', (req, res) => {
     }
   }
   let dockerResponse = dockerRequestSingleContainer(options);
+  dockerResponse.then((result) => {
+    res.json(result);
+  }).catch((err) => {
+    res.status
+  });
+});
+
+app.get('/container/:containerId/start', (req, res) => {
+  let id = req.params.containerId;
+  let path = '/v1.45/containers/' + id + '/start';
+  let options = {
+    socketPath: '/var/run/docker.sock',
+    path: path,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+  let dockerResponse = dockercontainerStart(options);
   dockerResponse.then((result) => {
     res.json(result);
   }).catch((err) => {
