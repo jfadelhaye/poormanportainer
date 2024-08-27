@@ -23,6 +23,11 @@ function stopContainer(id) {
   return fetchData(`container/${id}/stop`);
 }
 
+function containerLogs(id) {
+  return fetchData(`container/${id}/logs`);
+}
+
+
 async function fetchData(route){
   try {
     let response = await fetch(`http://127.0.0.1:3001/${route}`, {
@@ -156,6 +161,10 @@ function updateTableWithContainersList(elements) {
     buttonLogs.textContent = 'Logs';
     buttonLogs.addEventListener('click', (e) => {
       console.log(`Showing logs for container ${container.id}`);
+      containerLogs(container.id).then((logs) => {
+        console.log(`Logs for container ${container.id}: ${logs}`);
+        document.querySelector('#data').textContent = logs;
+      });
     });
 
     let buttonDelete = document.createElement('button');

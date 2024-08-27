@@ -105,6 +105,44 @@ function dockercontainerStartStop(options) {
   });
 }
 
+function dockercontainerLogs(options) {
+  return new Promise((resolve, reject) => {
+    let req = http.request(options, (res) => {
+      let rawData = '';
+      res.on('data', (chunk) => {
+        rawData += chunk;
+      });
+      res.on('end', () => {
+        resolve(rawData);
+      });
+    }
+    );
+    req.on('error', (e) => {
+      reject(e);
+    });
+    req.end();
+  });
+}
+app.get('/container/:containerId/logs', (req, res) => {
+  let id = req.params.containerId;
+  let path = '/v1.45/containers/' + id + '/logs?stdout=1&stderr=1';
+  let options = {
+    socketPath: '/var/run/docker.sock',
+    path: path,
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+  let dockerResponse = dockercontainerLogs(options);
+  dockerResponse.then((result) => {
+    console.log(result);
+    res.json(result);
+  }).catch((err) => {
+    res.status
+  });
+});
+
 app.get('/container/:containerId', (req, res) => {
   let id = req.params.containerId;
   let path = '/v1.45/containers/' + id + '/json';
