@@ -1,10 +1,7 @@
 TO DO :
 
-- Implement start / stop / delete in the backend ( dashboard )
-  - Show a loading while waiting for the answer
-- Implement start / stop / delete in the frontend (dashboard)
-- Implement logs in the backend (dashboard)
-- Implement logs in the frontend (dashboard)
+- Implement delete in the backend ( dashboard )
+- Implement delete in the frontend (dashboard)
 - Implement start / stop / delete / logs in details view
 - Make container fields updatable in the details view when possible
 - Container status line color change depending on status

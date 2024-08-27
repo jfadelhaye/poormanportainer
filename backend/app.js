@@ -123,6 +123,7 @@ function dockercontainerLogs(options) {
     req.end();
   });
 }
+
 app.get('/container/:containerId/logs', (req, res) => {
   let id = req.params.containerId;
   let path = '/v1.45/containers/' + id + '/logs?stdout=1&stderr=1';

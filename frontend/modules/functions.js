@@ -27,7 +27,6 @@ function containerLogs(id) {
   return fetchData(`container/${id}/logs`);
 }
 
-
 async function fetchData(route){
   try {
     let response = await fetch(`http://127.0.0.1:3001/${route}`, {
@@ -48,8 +47,6 @@ async function fetchData(route){
 function cleanTable(tbodyref) {
   tbodyref.innerHTML='';
 }
-
-
 
 function updateContainerDetails(container) {
   document.querySelector('#header').textContent = `Container ${container.name}`;
@@ -183,7 +180,6 @@ function updateTableWithContainersList(elements) {
     cell6.appendChild(buttonDelete);
   });
 }
-
 
 export { 
   fetchContainers, 

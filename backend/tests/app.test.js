@@ -38,7 +38,6 @@ describe("GET /container/:containerId", () => {
     })
 })
 
-
 describe("GET /container/:containerId/start", () => {
     this.timeout(10000)
     const containerId = "4872800e"
@@ -89,4 +88,3 @@ describe("GET /container/:containerId/logs", () => {
         })
     })
 })
-
