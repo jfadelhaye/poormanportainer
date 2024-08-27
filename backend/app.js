@@ -12,7 +12,7 @@ app.use(function (req, res, next) {
   next();
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 function dockerRequestContainers(options) {
   let result = [];
@@ -88,18 +88,14 @@ function dockerRequestSingleContainer(options) {
   });
 }
 
-function dockercontainerStart(options) {
+function dockercontainerStartStop(options) {
   return new Promise((resolve, reject) => {
+    console.log(` Starting ...`);
+
     let req = http.request(options, (res) => {
       res.setEncoding('utf8');
-      let rawData = '';
-      res.on('data', (chunk) => {
-        rawData += chunk;
-      });
-      res.on('end', () => {
-        const parsedData = JSON.parse(rawData);
-        resolve(parsedData);
-      });
+      let status = res.statusCode;
+      resolve(status);
     });
     req.on('error', (e) => {
       console.log(e);
@@ -128,6 +124,9 @@ app.get('/container/:containerId', (req, res) => {
   });
 });
 
+/**  
+ * there is definitly some refactor to do  here 
+ */
 app.get('/container/:containerId/start', (req, res) => {
   let id = req.params.containerId;
   let path = '/v1.45/containers/' + id + '/start';
@@ -139,7 +138,36 @@ app.get('/container/:containerId/start', (req, res) => {
       'Content-Type': 'application/json'
     }
   }
-  let dockerResponse = dockercontainerStart(options);
+  console.log(` starting container ${id}`);
+
+  let dockerResponse = dockercontainerStartStop(options);
+  dockerResponse.then((result) => {
+    if (result.status == 304 ){
+      result.status(304).send('Container is already running');
+    } else if ( result.status == 404){
+      result.status(404).send('Container not found');
+    } else {
+      result.status(204).send('Container started');
+    }
+  }).catch((err) => {
+    res.status
+  });
+});
+
+app.get('/container/:containerId/stop', (req, res) => {
+  let id = req.params.containerId;
+  let path = '/v1.45/containers/' + id + '/stop';
+  let options = {
+    socketPath: '/var/run/docker.sock',
+    path: path,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }
+  console.log(` starting container ${id}`);
+
+  let dockerResponse = dockercontainerStartStop(options);
   dockerResponse.then((result) => {
     res.json(result);
   }).catch((err) => {
@@ -148,7 +176,7 @@ app.get('/container/:containerId/start', (req, res) => {
 });
 
 app.get('/containers', (req, res) => {
-  let options = {
+  const options = {
     socketPath: '/var/run/docker.sock',
     path: '/v1.45/containers/json?all=true',
     method: 'GET',
@@ -156,7 +184,7 @@ app.get('/containers', (req, res) => {
       'Content-Type': 'application/json'
     }
   }
-  let dockerResponse = dockerRequestContainers(options);
+  const dockerResponse = dockerRequestContainers(options);
   dockerResponse.then((result) => {
     res.json(result);
   }).catch((err) => {
@@ -164,6 +192,8 @@ app.get('/containers', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+const srv = app.listen(PORT, () => {
   console.log("Server Listening on PORT:", PORT);
 });
+
+module.exports = srv;

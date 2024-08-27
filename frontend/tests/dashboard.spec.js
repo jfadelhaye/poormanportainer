@@ -2,33 +2,33 @@
 const { test, expect } = require('@playwright/test');
 const { link } = require('fs');
 
-const poortainer = 'http://127.0.0.1:8000';
+const poortainer = 'http://127.0.0.1:8080';
+
+const expectedTable = [
+  ['ee1c2429', 'nostalgic_galois',    'mcr.microsoft.com/playwright:v1.43.0-jammy', 'running', /Up/],
+  ['bfcc763b', 'kanboard-kanboard-1', 'kanboard/kanboard:latest',                   'running', /Up/],
+  ['4872800e', 'portainer',           'portainer/portainer-ce:2.21.0',              'running', /Up/],
+  ['718dc860', 'brave_agnesi',        'nginx',                                      'running', /Up/],
+  ['30d7a419', 'vibrant_noether',     'nginx',                                      'exited', /Exited/],
+  ['df1b1457', 'loving_wilbur',       'nginx',                                      'exited', /Exited/]
+]
 
 test('has title', async ({ page }) => {
   await page.goto(poortainer);
   await expect(page).toHaveTitle("Poor man's portainer");
 });
 
-
 test('container table is not empty', async ({ page }) => {
   await page.goto(poortainer);
-  await expect(page.locator('#containerTable').locator('tbody').locator('tr')).toHaveCount(4);
+  await expect(page.locator('#containerTable').locator('tbody').locator('tr')).toHaveCount(6);
 });
 
 test('has correct text in table fields', async ({ page }) => {
   await page.goto(poortainer);
 
-  
-  const expectedTexts = [
-    ['03ebdb25', 'xenodochial_cannon', 'mcr.microsoft.com/playwright:v1.43.0-jammy', 'running', /Up/],
-    ['718dc860', 'brave_agnesi',       'nginx',                                      'exited', /Exited \(\d+\) \d+ hours ago/],
-    ['30d7a419', 'vibrant_noether',    'nginx',                                      'exited', /Exited \(\d+\) \d+ hours ago/],
-    ['df1b1457', 'loving_wilbur',      'nginx',                                      'exited', /Exited \(\d+\) \d+ hours ago/]
-  ];
-
-  for (let i = 0; i < expectedTexts.length; i++) {
-    for (let j = 0; j < expectedTexts[i].length; j++) {
-      await expect(page.locator('#containerTable').locator('tbody').locator('tr').nth(i).locator('td').nth(j)).toHaveText(expectedTexts[i][j]);
+  for (let i = 0; i < expectedTable.length; i++) {
+    for (let j = 0; j < expectedTable[i].length; j++) {
+      await expect(page.locator('#containerTable').locator('tbody').locator('tr').nth(i).locator('td').nth(j)).toHaveText(expectedTable[i][j]);
     }
     const buttons = page.locator('#containerTable').locator('tbody').locator('tr').nth(i).locator('td').nth(5).locator('button');
     await expect(buttons).toHaveCount(4);
@@ -40,9 +40,12 @@ test('check button states', async ({ page }) => {
   
   const expectedButtonStates = [
     [true, false, false, false],
+    [true, false, false, false],
+    [true, false, false, false],
+    [true, false, false, false],
     [false, true, false, false],
     [false, true, false, false],
-    [false, true, false, false]
+
   ];
 
   for (let i = 0; i < expectedButtonStates.length; i++) {
@@ -64,7 +67,9 @@ test('clicking on link updates table', async ({ page }) => {
   const rowCount = await page.locator('#containerTable').locator('tbody').locator('tr').count();
   console.log('rowCount: ' + rowCount);
   const expectedValues = [
-    ['id', '03ebdb25'],
+    ['id', 'ee1c2429'],
+    ['id', 'bfcc763b'],
+    ['id', '4872800e'],
     ['id', '718dc860'],
     ['id', '30d7a419'],
     ['id', 'df1b1457']
@@ -77,3 +82,36 @@ test('clicking on link updates table', async ({ page }) => {
     await page.getByRole('button', {name: 'Dashboard'}).click();
   }
 });
+
+test('clicking on an enabled start button changes the text in the header', async ({ page }) => {
+  await page.goto(poortainer);
+
+  const startButton = page.getByRole('row', { name: 'df1b1457 loving_wilbur nginx' }).getByRole('button').first();
+  const stopButton = page.getByRole('row', { name: 'df1b1457 loving_wilbur nginx' }).getByRole('button').nth(1);
+  
+  await expect(stopButton).toBeDisabled();
+  await startButton.click(); 
+  const action = page.locator('#containerTableHead').locator('tr').locator('td').nth(5);
+  await expect(action).toHaveText('Starting... ⏳');
+  // the view should auto reload and text gets back to normal  
+  await expect(action).toHaveText('Actions (To be implemented)');
+  await expect(stopButton).toBeEnabled();
+  await expect(startButton).toBeDisabled();
+});
+
+test('clicking on an enabled stop button changes the text in the header', async ({ page }) => {
+  await page.goto(poortainer);
+
+  const startButton = page.getByRole('row', { name: 'df1b1457 loving_wilbur nginx' }).getByRole('button').first();
+  const stopButton = page.getByRole('row', { name: 'df1b1457 loving_wilbur nginx' }).getByRole('button').nth(1);
+  console.log('startButton: ' + startButton);
+  await expect(startButton).toBeDisabled();
+  await stopButton.click(); 
+  const action = page.locator('#containerTableHead').locator('tr').locator('td').nth(5);
+  await expect(action).toHaveText('Stopping ... ⏳');
+  // the view should auto reload and text gets back to normal  
+  await expect(action).toHaveText('Actions (To be implemented)');
+  await expect(startButton).toBeEnabled();
+  await expect(stopButton).toBeDisabled();
+});
+

@@ -6,13 +6,26 @@ function fetchContainers() {
   return fetchData('containers');
 }
 
+/** TODO : refactor dat  */
 function fetchContainer(id) {
   return fetchData(`container/${id}`);
 }
 
+function startContainer(id) {
+  let actions = document.querySelector('#containerTableHead tr td:last-child');
+  actions.innerHTML = 'Starting... ⏳';
+  return fetchData(`container/${id}/start`);
+}
+
+function stopContainer(id) {
+  let actions = document.querySelector('#containerTableHead tr td:last-child');
+  actions.innerHTML = 'Stopping ... ⏳';
+  return fetchData(`container/${id}/stop`);
+}
+
 async function fetchData(route){
   try {
-    let response = await fetch(`http://127.0.0.1:3000/${route}`, {
+    let response = await fetch(`http://127.0.0.1:3001/${route}`, {
       headers: {
         'Access-Control-Allow-Origin': '*'
       }
@@ -30,6 +43,8 @@ async function fetchData(route){
 function cleanTable(tbodyref) {
   tbodyref.innerHTML='';
 }
+
+
 
 function updateContainerDetails(container) {
   document.querySelector('#header').textContent = `Container ${container.name}`;
@@ -119,6 +134,10 @@ function updateTableWithContainersList(elements) {
     buttonStart.textContent = 'Start';
     buttonStart.addEventListener('click', (e) => {
       console.log(`Starting container ${container.id}`);
+      startContainer(container.id).then((container) => {
+        console.log(`started ${container} ...`);
+        window.location.reload();
+      });
     });
     let buttonStop = document.createElement('button');
     if (container.state === 'exited') {
@@ -127,7 +146,12 @@ function updateTableWithContainersList(elements) {
     buttonStop.textContent = 'Stop';
     buttonStop.addEventListener('click', (e) => {
       console.log(`Stopping container ${container.id}`);
+      stopContainer(container.id).then((container) => {
+        console.log(`stopped ${container} ...`);
+        window.location.reload();
+      });
     });
+
     let buttonLogs = document.createElement('button');
     buttonLogs.textContent = 'Logs';
     buttonLogs.addEventListener('click', (e) => {
