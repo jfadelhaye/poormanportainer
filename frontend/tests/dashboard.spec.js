@@ -2,10 +2,9 @@
 const { test, expect } = require('@playwright/test');
 const { link } = require('fs');
 
-const poortainer = 'http://127.0.0.1:8080';
+const poortainer = process.env.POORTAINER_URL || 'http://127.0.0.1:8080';
 
 const expectedTable = [
-  ['ee1c2429', 'nostalgic_galois',    'mcr.microsoft.com/playwright:v1.43.0-jammy', 'running', /Up/],
   ['bfcc763b', 'kanboard-kanboard-1', 'kanboard/kanboard:latest',                   'running', /Up/],
   ['4872800e', 'portainer',           'portainer/portainer-ce:2.21.0',              'running', /Up/],
   ['718dc860', 'brave_agnesi',        'nginx',                                      'running', /Up/],
@@ -13,17 +12,17 @@ const expectedTable = [
   ['df1b1457', 'loving_wilbur',       'nginx',                                      'exited', /Exited/]
 ]
 
-test('has title', async ({ page }) => {
+test('Title exists', async ({ page }) => {
   await page.goto(poortainer);
   await expect(page).toHaveTitle("Poor man's portainer");
 });
 
-test('container table is not empty', async ({ page }) => {
+test('Table is not empty', async ({ page }) => {
   await page.goto(poortainer);
-  await expect(page.locator('#containerTable').locator('tbody').locator('tr')).toHaveCount(6);
+  await expect(page.locator('#containerTable').locator('tbody').locator('tr')).toHaveCount(5);
 });
 
-test('has correct text in table fields', async ({ page }) => {
+test('Table values are expected ones', async ({ page }) => {
   await page.goto(poortainer);
 
   for (let i = 0; i < expectedTable.length; i++) {
@@ -35,17 +34,15 @@ test('has correct text in table fields', async ({ page }) => {
   }
 });
 
-test('check button states', async ({ page }) => {
+test('Button are disabled depending the container state', async ({ page }) => {
   await page.goto(poortainer);
   
   const expectedButtonStates = [
     [true, false, false, false],
     [true, false, false, false],
     [true, false, false, false],
-    [true, false, false, false],
     [false, true, false, false],
-    [false, true, false, false],
-
+    [false, true, false, false]
   ];
 
   for (let i = 0; i < expectedButtonStates.length; i++) {
@@ -60,14 +57,13 @@ test('check button states', async ({ page }) => {
   }
 });
 
-test('clicking on link updates table', async ({ page }) => {
+test('Detail View loads', async ({ page }) => {
   await page.goto(poortainer);
 
   const links = await page.locator('#containerTable').locator('tbody').locator('tr').locator('a');
   const rowCount = await page.locator('#containerTable').locator('tbody').locator('tr').count();
   console.log('rowCount: ' + rowCount);
   const expectedValues = [
-    ['id', 'ee1c2429'],
     ['id', 'bfcc763b'],
     ['id', '4872800e'],
     ['id', '718dc860'],
@@ -83,7 +79,7 @@ test('clicking on link updates table', async ({ page }) => {
   }
 });
 
-test('clicking on an enabled start button changes the text in the header', async ({ page }) => {
+test('Start button starts a container', async ({ page }) => {
   await page.goto(poortainer);
 
   const startButton = page.getByRole('row', { name: 'df1b1457 loving_wilbur nginx' }).getByRole('button').first();
@@ -99,7 +95,7 @@ test('clicking on an enabled start button changes the text in the header', async
   await expect(startButton).toBeDisabled();
 });
 
-test('clicking on an enabled stop button changes the text in the header', async ({ page }) => {
+test('Stop button stops a container', async ({ page }) => {
   await page.goto(poortainer);
 
   const startButton = page.getByRole('row', { name: 'df1b1457 loving_wilbur nginx' }).getByRole('button').first();
@@ -115,3 +111,17 @@ test('clicking on an enabled stop button changes the text in the header', async 
   await expect(stopButton).toBeDisabled();
 });
 
+test('logs show logs in view', async ({ page }) => {
+  await page.goto(poortainer);
+  const logsArea = page.locator('#data');
+  const logsButton = page.getByRole('row', { name: 'df1b1457 loving_wilbur nginx' }).getByRole('button').nth(2);
+
+  await expect(logsArea).toBeEmpty();
+  await expect(logsButton).toBeEnabled();
+  await logsButton.click(); 
+  console.log('get logs ... ');
+  await expect(logsArea).not.toBeEmpty();
+  await expect(logsArea).toHaveText(/start worker processes/);
+  await page.getByRole('button', { name: 'Dashboard' }).click();
+  await expect(logsArea).toBeEmpty();
+  });

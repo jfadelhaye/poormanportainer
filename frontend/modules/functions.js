@@ -46,6 +46,7 @@ async function fetchData(route){
  */
 function cleanTable(tbodyref) {
   tbodyref.innerHTML='';
+  document.querySelector('#data').textContent = '';
 }
 
 function updateContainerDetails(container) {
